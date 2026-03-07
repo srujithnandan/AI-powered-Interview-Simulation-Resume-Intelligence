@@ -1,0 +1,65 @@
+JOHN DOE
+San Francisco, CA | john.doe@example.com | (555) 123-4567
+linkedin.com/in/johndoe | github.com/johndoe
+
+PROFESSIONAL SUMMARY
+Results-driven Senior Software Engineer with 8+ years of experience in designing and implementing scalable web applications. Proven track record of improving system performance by 40% and reducing deployment time by 60%. Expert in ASP.NET Core, C#, microservices architecture, and cloud technologies.
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer | Tech Innovations Inc. | San Francisco, CA | 2020 - Present
+• Architected and developed 15+ RESTful microservices using ASP.NET Core 8.0, serving 500K+ daily active users
+• Improved application performance by 45% through implementing Redis caching and optimizing database queries
+• Led a team of 5 developers in migrating monolithic application to microservices architecture, reducing deployment time by 60%
+• Implemented CI/CD pipelines using Azure DevOps, increasing deployment frequency from weekly to daily releases
+• Reduced API response time from 800ms to 200ms by implementing asynchronous processing and message queues
+• Designed and deployed containerized applications using Docker and Kubernetes on Azure AKS
+• Achieved 99.9% uptime by implementing comprehensive monitoring with Application Insights and automated alerting
+
+Software Engineer | Digital Solutions Corp. | San Francisco, CA | 2018 - 2020
+• Developed and maintained 20+ web applications using ASP.NET Core, Entity Framework, and SQL Server
+• Implemented OAuth 2.0 authentication and JWT-based authorization, securing applications for 100K+ users
+• Optimized database performance by designing efficient indexing strategies, reducing query execution time by 50%
+• Created automated test suites with 85% code coverage using xUnit and Moq
+• Collaborated with cross-functional teams to deliver features 30% faster through Agile methodologies
+• Migrated legacy .NET Framework applications to .NET Core, improving performance by 35%
+
+Junior Software Developer | StartUp Solutions | San Jose, CA | 2016 - 2018
+• Developed responsive web applications using ASP.NET MVC, JavaScript, and Bootstrap
+• Implemented RESTful APIs consumed by mobile and web clients, handling 50K+ requests per day
+• Fixed 100+ production bugs and improved code quality through peer reviews
+• Participated in daily stand-ups and sprint planning sessions
+
+TECHNICAL SKILLS
+Languages: C#, SQL, JavaScript, TypeScript, Python
+Frameworks: ASP.NET Core, Entity Framework Core, SignalR, Blazor
+Cloud & DevOps: Azure, Docker, Kubernetes, Azure DevOps, GitHub Actions, Terraform
+Databases: SQL Server, PostgreSQL, MongoDB, Redis, Cosmos DB
+Tools & Practices: Git, Visual Studio, Microservices, REST API, GraphQL, Clean Architecture, SOLID Principles, TDD, Agile/Scrum
+Messaging: RabbitMQ, Azure Service Bus, Kafka
+
+EDUCATION
+Bachelor of Science in Computer Science | Stanford University | 2012 - 2016
+GPA: 3.8/4.0
+
+CERTIFICATIONS
+• Microsoft Certified: Azure Developer Associate (AZ-204) - 2023
+• Microsoft Certified: Azure Solutions Architect Expert (AZ-305) - 2022
+• Certified Kubernetes Application Developer (CKAD) - 2021
+
+PROJECTS
+AI-Powered Interview Simulator
+• Built a full-stack application using ASP.NET Core and OpenAI API for technical interview practice
+• Implemented resume parsing and analysis features using machine learning algorithms
+• Deployed to Azure App Service with MongoDB Atlas backend, supporting 1000+ concurrent users
+
+E-Commerce Microservices Platform
+• Designed distributed e-commerce system with 12 microservices handling 200K+ orders per month
+• Implemented event-driven architecture using Azure Service Bus for inter-service communication
+• Achieved sub-second response times through strategic caching and database optimization
+
+ACHIEVEMENTS
+• Reduced infrastructure costs by $50K annually through optimizing cloud resource utilization
+• Increased team productivity by 25% by establishing coding standards and best practices
+• Won "Innovation Award" for developing automated testing framework that reduced QA time by 40%
+• Mentored 3 junior developers, helping them advance to mid-level positions
