@@ -13,11 +13,16 @@ public class InterviewController : ControllerBase
 {
     private readonly IInterviewService _interviewService;
     private readonly IInterviewSimulatorService _simulatorService;
+    private readonly IInterviewReadinessService _readinessService;
 
-    public InterviewController(IInterviewService interviewService, IInterviewSimulatorService simulatorService)
+    public InterviewController(
+        IInterviewService interviewService,
+        IInterviewSimulatorService simulatorService,
+        IInterviewReadinessService readinessService)
     {
         _interviewService = interviewService;
         _simulatorService = simulatorService;
+        _readinessService = readinessService;
     }
 
     [HttpGet("questions")]
@@ -168,6 +173,16 @@ public class InterviewController : ControllerBase
         var userId = GetCurrentUserId();
         var trends = await _simulatorService.GetPerformanceTrendsAsync(userId);
         return Ok(trends);
+    }
+
+    // ── Interview Readiness Score ──
+
+    [HttpGet("readiness")]
+    public async Task<IActionResult> GetReadinessScore()
+    {
+        var userId = GetCurrentUserId();
+        var readiness = await _readinessService.GetReadinessScoreAsync(userId);
+        return Ok(readiness);
     }
 
     private string GetCurrentUserId()

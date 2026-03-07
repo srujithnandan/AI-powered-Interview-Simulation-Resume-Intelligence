@@ -793,6 +793,24 @@
             },
             "description": "Get performance trends across all sessions including per-role analysis, difficulty breakdown, skill gaps, and recommendations."
           }
+        },
+        {
+          "name": "Interview Readiness Score",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interview/readiness",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interview", "readiness"]
+            },
+            "description": "Get your overall interview readiness score — a composite metric combining resume quality (30%), interview performance (50%), and practice consistency (20%). Returns strengths, gaps, and a personalized action plan."
+          }
         }
       ]
     }

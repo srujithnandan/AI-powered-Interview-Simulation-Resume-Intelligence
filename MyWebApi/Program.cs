@@ -43,6 +43,7 @@ builder.Services.AddScoped<IResumeService, ResumeService>();
 builder.Services.AddScoped<IResumeAnalyzerService, ResumeAnalyzerService>();
 builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IInterviewSimulatorService, InterviewSimulatorService>();
+builder.Services.AddScoped<IInterviewReadinessService, InterviewReadinessService>();
 
 builder.Services.AddHttpClient<IOpenAIService, OpenAIService>(client =>
 {
