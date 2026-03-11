@@ -1,5 +1,19 @@
 import api from './api';
 
+// ── Interview Questions API (GET /api/interview/questions) ──
+
+export const getQuestions = async (role, count = 5) => {
+  const { data } = await api.get('/interview/questions', { params: { role, count } });
+  return data;
+};
+
+export const submitAnswer = async (sessionId, question, answer) => {
+  const { data } = await api.post('/interview/answer', { sessionId, question, answer });
+  return data;
+};
+
+// ── Interview Simulator API ──
+
 export const startSession = async (role, questionCount = 5, difficulty = 'Medium', category = 'Mixed') => {
   const { data } = await api.post('/interview/simulator/start', {
     role,
@@ -10,7 +24,7 @@ export const startSession = async (role, questionCount = 5, difficulty = 'Medium
   return data;
 };
 
-export const submitAnswer = async (sessionId, answer) => {
+export const submitSimulatorAnswer = async (sessionId, answer) => {
   const { data } = await api.post('/interview/simulator/submit', { sessionId, answer });
   return data;
 };

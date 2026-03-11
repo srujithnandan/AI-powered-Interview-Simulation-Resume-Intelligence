@@ -63,7 +63,9 @@ public class InterviewService : IInterviewService
             Feedback = $"Technical Accuracy: {evaluation.TechnicalAccuracy}; Communication Clarity: {evaluation.CommunicationClarity}; Suggestions: {evaluation.Suggestions}",
             TechnicalAccuracy = evaluation.TechnicalAccuracy,
             CommunicationClarity = evaluation.CommunicationClarity,
+            DepthOfKnowledge = evaluation.DepthOfKnowledge,
             Suggestions = evaluation.Suggestions,
+            ExampleImprovement = evaluation.ExampleImprovement,
             EvaluatedAt = DateTime.UtcNow
         };
 

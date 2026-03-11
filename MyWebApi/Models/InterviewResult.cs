@@ -8,6 +8,8 @@ public class InterviewResult
     public string Feedback { get; set; } = string.Empty;
     public string TechnicalAccuracy { get; set; } = string.Empty;
     public string CommunicationClarity { get; set; } = string.Empty;
+    public string DepthOfKnowledge { get; set; } = string.Empty;
     public string Suggestions { get; set; } = string.Empty;
+    public string ExampleImprovement { get; set; } = string.Empty;
     public DateTime EvaluatedAt { get; set; } = DateTime.UtcNow;
 }

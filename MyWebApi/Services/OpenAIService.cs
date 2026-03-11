@@ -49,7 +49,13 @@ public class OpenAIService : IOpenAIService
     public async Task<List<string>> GenerateInterviewQuestionsAsync(string role, int count)
     {
                 var prompt =
-                        $"Generate {count} technical interview questions for a {role}.\n" +
+                        $"Generate {count} technical interview questions for the following role:\n\n" +
+                        $"Role: {role}\n\n" +
+                        "Rules:\n" +
+                        "- Include a mix of easy, medium, and hard questions.\n" +
+                        "- Focus on practical software engineering knowledge.\n" +
+                        "- Avoid trivial textbook definitions.\n" +
+                        "- Questions should encourage explanation and reasoning.\n\n" +
                         "Return strict JSON only in this format:\n" +
                         "{\n" +
                         "  \"questions\": [\"Question 1\", \"Question 2\"]\n" +
@@ -74,7 +80,13 @@ public class OpenAIService : IOpenAIService
             : " Include a mix of technical, behavioral, and system design questions.";
 
         var prompt =
-            $"Generate {count} {difficulty}-level technical interview questions for a {role}.{categoryInstruction}\n" +
+            $"Generate {count} {difficulty}-level technical interview questions for the following role:\n\n" +
+            $"Role: {role}\n\n" +
+            $"Rules:\n" +
+            "- Focus on practical software engineering knowledge.\n" +
+            "- Avoid trivial textbook definitions.\n" +
+            "- Questions should encourage explanation and reasoning.\n" +
+            $"{categoryInstruction}\n\n" +
             "Return strict JSON only in this format:\n" +
             "{\n" +
             "  \"questions\": [\"Question 1\", \"Question 2\"]\n" +
@@ -95,14 +107,16 @@ public class OpenAIService : IOpenAIService
     public async Task<string> GenerateFollowUpQuestionAsync(string role, string previousQuestion, string previousAnswer)
     {
         var prompt =
-            $"Based on this interview exchange for a {role} position, generate a single follow-up question " +
-            "that digs deeper into the candidate's knowledge.\n" +
+            "You are conducting a technical interview.\n\n" +
+            "Based on the previous answer from the candidate, generate one intelligent follow-up question.\n\n" +
+            $"Role: {role}\n\n" +
+            $"Original Question:\n{previousQuestion}\n\n" +
+            $"Candidate Answer:\n{previousAnswer}\n\n" +
+            "Generate a follow-up question that tests deeper understanding.\n\n" +
             "Return strict JSON only:\n" +
             "{\n" +
             "  \"followUpQuestion\": \"\"\n" +
-            "}\n\n" +
-            $"Previous Question: {previousQuestion}\n" +
-            $"Candidate Answer: {previousAnswer}";
+            "}";
 
         var content = await CreateChatCompletionAsync("You are a senior technical interviewer.", prompt);
         var json = ExtractJsonObject(content);
@@ -133,18 +147,28 @@ public class OpenAIService : IOpenAIService
     public async Task<AnswerEvaluationAiResponse> EvaluateAnswerAsync(string question, string answer)
     {
                 var prompt =
-                        "Evaluate this technical interview answer.\n" +
-                        "Return strict JSON only in this format:\n" +
+                        "You are a senior technical interviewer with 10+ years of experience conducting software engineering interviews.\n\n" +
+                        "Evaluate the candidate's answer carefully and return the result in strict JSON only:\n" +
                         "{\n" +
                         "  \"score\": 0,\n" +
                         "  \"technicalAccuracy\": \"\",\n" +
                         "  \"communicationClarity\": \"\",\n" +
-                        "  \"suggestions\": \"\"\n" +
+                        "  \"depthOfKnowledge\": \"\",\n" +
+                        "  \"suggestions\": \"\",\n" +
+                        "  \"exampleImprovement\": \"\"\n" +
                         "}\n\n" +
+                        "Field descriptions:\n" +
+                        "- score (0-10): Numeric score based on correctness, clarity, and completeness.\n" +
+                        "- technicalAccuracy: Whether the answer is technically correct and why.\n" +
+                        "- communicationClarity: How clearly the candidate explained the concept.\n" +
+                        "- depthOfKnowledge: Whether the candidate demonstrates shallow or deep understanding.\n" +
+                        "- suggestions: Specific suggestions to improve the answer.\n" +
+                        "- exampleImprovement: A short example of a better explanation.\n\n" +
+                        "Rules: Be constructive but honest. Do not be overly harsh. Encourage learning. Keep feedback concise and professional.\n\n" +
                         $"Question: {question}\n" +
-                        $"Answer: {answer}";
+                        $"Candidate Answer: {answer}";
 
-        var content = await CreateChatCompletionAsync("You are an expert technical interviewer.", prompt);
+        var content = await CreateChatCompletionAsync("You are a senior technical interviewer with 10+ years of experience. Be constructive, honest, and encourage learning.", prompt);
         var json = ExtractJsonObject(content);
         var parsed = JsonSerializer.Deserialize<AnswerEvaluationAiResponse>(json, JsonOptions())
             ?? throw new InvalidOperationException("Unable to parse interview evaluation from AI response.");
@@ -238,7 +262,9 @@ public class AnswerEvaluationAiResponse
     public int Score { get; set; }
     public string TechnicalAccuracy { get; set; } = string.Empty;
     public string CommunicationClarity { get; set; } = string.Empty;
+    public string DepthOfKnowledge { get; set; } = string.Empty;
     public string Suggestions { get; set; } = string.Empty;
+    public string ExampleImprovement { get; set; } = string.Empty;
 }
 
 public class QuestionAnswerPair
