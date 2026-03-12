@@ -1,4 +1,5 @@
 using System.Text;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -9,6 +10,9 @@ using MyWebApi.Repositories;
 using MyWebApi.Services;
 using MyWebApi.Settings;
 
+// Load .env file into environment variables
+Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
@@ -18,10 +22,20 @@ builder.Services.AddMongoDb(builder.Configuration);
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>() ?? new JwtSettings();
 jwtSettings.Secret = Environment.GetEnvironmentVariable("JWT_SECRET")
     ?? jwtSettings.Secret;
+jwtSettings.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+    ?? jwtSettings.Issuer;
+jwtSettings.Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+    ?? jwtSettings.Audience;
+if (int.TryParse(Environment.GetEnvironmentVariable("JWT_EXPIRY_MINUTES"), out var expiryMin))
+    jwtSettings.ExpiryMinutes = expiryMin;
 
 var openAiSettings = builder.Configuration.GetSection("OpenAI").Get<OpenAISettings>() ?? new OpenAISettings();
 openAiSettings.ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")
     ?? openAiSettings.ApiKey;
+openAiSettings.BaseUrl = Environment.GetEnvironmentVariable("OPENAI_BASE_URL")
+    ?? openAiSettings.BaseUrl;
+openAiSettings.Model = Environment.GetEnvironmentVariable("OPENAI_MODEL")
+    ?? openAiSettings.Model;
 
 if (string.IsNullOrWhiteSpace(jwtSettings.Secret))
 {
@@ -70,6 +84,17 @@ builder.Services
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -114,6 +139,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

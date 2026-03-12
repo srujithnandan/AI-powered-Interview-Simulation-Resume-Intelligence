@@ -12,6 +12,8 @@ public static class MongoDbServiceCollectionExtensions
         var mongoSettings = configuration.GetSection("MongoDb").Get<MongoDbSettings>() ?? new MongoDbSettings();
         mongoSettings.ConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING")
             ?? mongoSettings.ConnectionString;
+        mongoSettings.DatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME")
+            ?? mongoSettings.DatabaseName;
 
         if (string.IsNullOrWhiteSpace(mongoSettings.ConnectionString))
         {
