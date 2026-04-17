@@ -1,7 +1,16 @@
 import axios from 'axios';
 import { getToken, clearAuth } from '../utils/tokenHelper';
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || '/api';
+function normalizeApiBaseUrl(value) {
+  const fallback = '/api';
+  if (!value) return fallback;
+
+  const trimmed = value.replace(/\/+$/, '');
+  if (trimmed.endsWith('/api')) return trimmed;
+  return `${trimmed}/api`;
+}
+
+const apiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
 const api = axios.create({
   baseURL: apiBaseUrl,

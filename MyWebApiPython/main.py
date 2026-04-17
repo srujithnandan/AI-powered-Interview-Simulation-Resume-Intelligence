@@ -40,6 +40,10 @@ CORS_ALLOWED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+CORS_ALLOWED_ORIGIN_REGEX = os.getenv(
+    "CORS_ALLOWED_ORIGIN_REGEX",
+    r"https://.*\.onrender\.com$",
+)
 
 MAX_FAILED_LOGIN_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
@@ -77,6 +81,7 @@ app = FastAPI(title="AI Interview Simulator and Resume Analyzer API (Python)", v
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ALLOWED_ORIGINS,
+    allow_origin_regex=CORS_ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
