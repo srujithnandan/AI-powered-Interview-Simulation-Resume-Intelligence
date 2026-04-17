@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: ai-interview-backend
+    runtime: python
+    rootDir: MyWebApiPython
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /docs
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+  - type: static_site
+    name: ai-interview-frontend
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install; npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      # Replace this after backend is created if Render assigns a different URL.
+      - key: VITE_API_URL
+        value: https://ai-interview-backend.onrender.com/api
