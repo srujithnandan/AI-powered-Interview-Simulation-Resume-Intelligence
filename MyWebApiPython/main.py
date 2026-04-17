@@ -62,7 +62,7 @@ safe_create_index(users_col, "refreshTokens.token")
 safe_create_index(resumes_col, [("userId", DESCENDING), ("createdAt", DESCENDING)])
 safe_create_index(sessions_col, [("userId", DESCENDING), ("createdAt", DESCENDING)])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 app = FastAPI(title="AI Interview Simulator and Resume Analyzer API (Python)", version="1.0.0")
 
@@ -190,6 +190,15 @@ async def openai_chat(system_prompt: str, user_prompt: str) -> str:
         raise HTTPException(status_code=500, detail=f"OpenAI call failed: {resp.text}")
     payload = resp.json()
     return payload["choices"][0]["message"]["content"]
+
+
+async def try_openai_chat(system_prompt: str, user_prompt: str) -> Optional[str]:
+    if not OPENAI_API_KEY:
+        return None
+    try:
+        return await openai_chat(system_prompt, user_prompt)
+    except Exception:
+        return None
 
 
 def extract_text(file_name: str, content: bytes) -> str:
@@ -746,8 +755,31 @@ async def upload_resume(file: UploadFile = File(...), user: dict[str, Any] = Dep
         "}\n\n"
         f"Resume:\n{extracted}"
     )
-    content_resp = await openai_chat("You are an expert ATS and technical recruiter.", prompt)
-    parsed = parse_json_from_llm(content_resp)
+    content_resp = await try_openai_chat("You are an expert ATS and technical recruiter.", prompt)
+    if content_resp:
+        parsed = parse_json_from_llm(content_resp)
+    else:
+        # Fallback heuristic when AI key is absent/unavailable.
+        details = resume_detailed_analysis(extracted)
+        ats = int(
+            _clamp(
+                0.35 * details["formatScore"]
+                + 0.25 * details["readabilityScore"]
+                + 0.20 * min(details["actionVerbCount"] * 5, 100)
+                + 0.20 * min(details["quantifiableAchievementCount"] * 8, 100),
+                0,
+                100,
+            )
+        )
+        parsed = {
+            "atsScore": ats,
+            "missingSkills": [],
+            "strengthAreas": [
+                "Resume structure analyzed successfully",
+                f"Detected experience level: {details.get('experienceLevel', 'Unknown')}",
+            ],
+            "improvementSuggestions": details.get("recommendations", [])[:5],
+        }
 
     resume_doc = {
         "userId": oid_str(user["_id"]),
@@ -827,29 +859,275 @@ async def generate_questions(role: str, count: int, difficulty: str = "Medium", 
         '  "questions": ["Question 1", "Question 2"]\n'
         "}"
     )
-    content = await openai_chat("You are a senior technical interviewer.", prompt)
-    parsed = parse_json_from_llm(content)
-    questions = [q.strip() for q in parsed.get("questions", []) if isinstance(q, str) and q.strip()]
-    return questions
+    content = await try_openai_chat("You are a senior technical interviewer.", prompt)
+    if content:
+        parsed = parse_json_from_llm(content)
+        questions = [q.strip() for q in parsed.get("questions", []) if isinstance(q, str) and q.strip()]
+        if questions:
+            return questions[:count]
+
+    # Fallback dynamic bank when AI key/service is unavailable.
+    fallback_bank = {
+        "Python Developer": {
+            "Easy": [
+                "What is the difference between a list and tuple in Python?",
+                "How does virtualenv help in Python development?",
+                "What is the purpose of requirements.txt?",
+            ],
+            "Medium": [
+                "Explain async and await in Python with a practical API example.",
+                "How would you design JWT authentication in a FastAPI app?",
+                "How do you optimize MongoDB queries in a Python backend?",
+            ],
+            "Hard": [
+                "Design a scalable Python API for high traffic and explain trade-offs.",
+                "How would you implement resilient external API calls with retries/backoff?",
+                "How do you structure observability (logs, metrics, tracing) in production Python services?",
+            ],
+        },
+        "Backend Developer": {
+            "Easy": [
+                "What is a REST API and why is it useful?",
+                "What is the difference between SQL and NoSQL databases?",
+                "What is authentication vs authorization?",
+            ],
+            "Medium": [
+                "How would you design database indexes for a read-heavy API?",
+                "Explain caching strategies for backend performance.",
+                "How do you handle retries and idempotency for write APIs?",
+            ],
+            "Hard": [
+                "How do you design eventual consistency in distributed systems?",
+                "Design a resilient backend for 1M daily users.",
+                "How do you handle zero-downtime deployments for backend services?",
+            ],
+        },
+    }
+
+    role_bank = fallback_bank.get(role) or fallback_bank.get("Backend Developer", {})
+    level = difficulty if difficulty in ["Easy", "Medium", "Hard"] else "Medium"
+    pool = role_bank.get(level, [])
+
+    # Add cross-category prompts when requested, so it is not static.
+    if category in ["Behavioral", "System Design", "Coding", "Technical"]:
+        pool = pool + [f"{category}: {q}" for q in pool[:2]]
+
+    if not pool:
+        pool = [f"Explain a core concept for {role} at {level} level with a practical example."]
+
+    generated = []
+    i = 0
+    while len(generated) < count:
+        generated.append(pool[i % len(pool)])
+        i += 1
+    return generated
+
+
+_REFERENCE_ANSWER_CACHE: dict[str, str] = {}
+
+
+async def get_reference_answer(question: str) -> Optional[str]:
+    key = question.strip().lower()
+    if not key:
+        return None
+    if key in _REFERENCE_ANSWER_CACHE:
+        return _REFERENCE_ANSWER_CACHE[key]
+
+    prompt = (
+        "Create a concise but strong reference answer for this interview question. "
+        "Return plain text only. Include concept, trade-off, and practical example.\n\n"
+        f"Question: {question}"
+    )
+    content = await try_openai_chat("You are a senior software interview coach.", prompt)
+    if content:
+        ref = content.strip()
+        _REFERENCE_ANSWER_CACHE[key] = ref
+        return ref
+    return None
+
+
+INTERVIEW_STOP_WORDS = {
+    "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "from",
+    "as", "is", "was", "are", "were", "be", "have", "has", "had", "this", "that", "these", "those",
+    "what", "how", "why", "when", "where", "which", "explain", "describe", "difference", "between",
+    "can", "could", "should", "would", "into", "about", "your", "you", "they", "them", "their", "flow",
+}
+
+ADVANCED_TERMS = {
+    "scalability", "throughput", "latency", "tradeoff", "consistency", "availability", "partition", "idempotent",
+    "observability", "monitoring", "logging", "metrics", "tracing", "retry", "backoff", "caching", "indexing",
+    "concurrency", "parallelism", "thread", "async", "queue", "architecture", "security", "authentication",
+    "authorization", "validation", "transaction", "rollback", "normalization", "denormalization", "replication",
+    "scale", "stateless", "rotate", "revoke", "expiry",
+}
+
+REASONING_MARKERS = {
+    "because", "therefore", "so that", "if", "then", "tradeoff", "trade-off", "however", "for example", "for instance",
+    "in practice", "depends on", "pros", "cons", "first", "second", "finally",
+}
+
+
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-zA-Z][a-zA-Z0-9+#]*", text.lower())
+
+
+TOKEN_CANONICAL_MAP = {
+    "authentication": "auth",
+    "authorize": "auth",
+    "authorization": "auth",
+    "authenticated": "auth",
+    "auth": "auth",
+    "apis": "api",
+    "tokens": "token",
+    "services": "service",
+    "microservices": "service",
+    "scalable": "scale",
+    "scalability": "scale",
+    "indexed": "index",
+    "indexing": "index",
+}
+
+
+def _canonicalize_token(token: str) -> str:
+    t = TOKEN_CANONICAL_MAP.get(token, token)
+    if len(t) > 4 and t.endswith("ing"):
+        t = t[:-3]
+    elif len(t) > 3 and t.endswith("ed"):
+        t = t[:-2]
+    elif len(t) > 4 and t.endswith("es"):
+        t = t[:-2]
+    elif len(t) > 3 and t.endswith("s"):
+        t = t[:-1]
+    return TOKEN_CANONICAL_MAP.get(t, t)
+
+
+def _canonical_set(tokens: list[str]) -> set[str]:
+    return {_canonicalize_token(t) for t in tokens}
+
+
+def _question_keywords(question: str) -> set[str]:
+    tokens = _tokenize(question)
+    return {_canonicalize_token(t) for t in tokens if len(t) > 2 and t not in INTERVIEW_STOP_WORDS}
+
+
+def _keyword_overlap(question_keys: set[str], answer_keys: set[str]) -> int:
+    hits = 0
+    for qk in question_keys:
+        if qk in answer_keys:
+            hits += 1
+            continue
+        if len(qk) >= 5 and any(ak.startswith(qk[:5]) or qk.startswith(ak[:5]) for ak in answer_keys if len(ak) >= 5):
+            hits += 1
+    return hits
+
+
+def _contains_phrase(text: str, phrases: set[str]) -> int:
+    lower = text.lower()
+    return sum(1 for p in phrases if p in lower)
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
 
 
 async def evaluate_answer(question: str, answer: str) -> dict[str, Any]:
-    prompt = (
-        "You are a senior technical interviewer with 10+ years of experience.\n\n"
-        "Evaluate the candidate answer and return strict JSON only:\n"
-        "{\n"
-        '  "score": 0,\n'
-        '  "technicalAccuracy": "",\n'
-        '  "communicationClarity": "",\n'
-        '  "depthOfKnowledge": "",\n'
-        '  "suggestions": "",\n'
-        '  "exampleImprovement": ""\n'
-        "}\n\n"
-        f"Question: {question}\n"
-        f"Candidate Answer: {answer}"
+    answer_text = answer.strip()
+    answer_tokens = _tokenize(answer_text)
+    answer_keys = _canonical_set(answer_tokens)
+    question_keys = _question_keywords(question)
+
+    key_overlap = 0
+    if question_keys:
+        key_overlap = _keyword_overlap(question_keys, answer_keys)
+        relevance_ratio = key_overlap / len(question_keys)
+    else:
+        relevance_ratio = 0.5
+
+    word_count = len(answer_tokens)
+    sentence_count = max(1, len([s for s in re.split(r"[.!?]+", answer_text) if s.strip()]))
+    avg_sentence_words = word_count / sentence_count
+    reasoning_hits = _contains_phrase(answer_text, REASONING_MARKERS)
+    depth_hits = sum(1 for t in set(answer_tokens) if t in ADVANCED_TERMS)
+
+    length_score = _clamp((word_count - 12) / 25, 0, 1)
+    relevance_score = _clamp(relevance_ratio, 0, 1)
+    reasoning_score = _clamp(reasoning_hits / 3, 0, 1)
+    depth_score = _clamp(depth_hits / 4, 0, 1)
+
+    readability_score = 1.0
+    if avg_sentence_words < 6:
+        readability_score = 0.6
+    elif avg_sentence_words > 32:
+        readability_score = 0.7
+
+    technical_raw = 10 * (0.50 * relevance_score + 0.20 * reasoning_score + 0.20 * depth_score + 0.10 * length_score)
+    communication_raw = 10 * (0.45 * readability_score + 0.35 * length_score + 0.20 * reasoning_score)
+    depth_raw = 10 * (0.45 * depth_score + 0.35 * reasoning_score + 0.20 * relevance_score)
+
+    # Hybrid refinement: compare with AI reference answer when key is available.
+    reference = await get_reference_answer(question)
+    if reference:
+        ref_keys = _canonical_set(_tokenize(reference))
+        ref_overlap = _keyword_overlap(ref_keys, answer_keys)
+        ref_ratio = ref_overlap / max(1, len(ref_keys))
+        technical_raw += 1.5 * _clamp(ref_ratio * 2, 0, 1)
+        depth_raw += 1.0 * _clamp(ref_ratio * 2, 0, 1)
+
+    technical = int(round(_clamp(technical_raw, 0, 10)))
+    communication = int(round(_clamp(communication_raw, 0, 10)))
+    depth = int(round(_clamp(depth_raw, 0, 10)))
+
+    overall = int(round(_clamp(0.50 * technical + 0.25 * communication + 0.25 * depth, 0, 10)))
+
+    if overall >= 8:
+        accuracy_text = "Strong and technically relevant answer."
+    elif overall >= 6:
+        accuracy_text = "Mostly correct, but missing some important technical detail."
+    elif overall >= 4:
+        accuracy_text = "Partially correct with gaps in technical relevance."
+    else:
+        accuracy_text = "Limited technical accuracy for the question asked."
+
+    if communication >= 8:
+        clarity_text = "Clear, structured, and easy to follow."
+    elif communication >= 6:
+        clarity_text = "Understandable, but structure can be improved."
+    else:
+        clarity_text = "Needs clearer structure and more precise wording."
+
+    if depth >= 8:
+        depth_text = "Shows solid depth with reasoning and trade-offs."
+    elif depth >= 6:
+        depth_text = "Shows moderate depth but could include stronger trade-off discussion."
+    else:
+        depth_text = "Answer is fairly shallow; add deeper reasoning and system implications."
+
+    suggestions = []
+    if key_overlap < max(1, len(question_keys) // 3):
+        suggestions.append("Address more of the key concepts asked in the question.")
+    if reasoning_hits == 0:
+        suggestions.append("Explain your reasoning using cause/effect and trade-offs.")
+    if depth_hits == 0:
+        suggestions.append("Add deeper technical details (performance, scalability, reliability, or security).")
+    if word_count < 20:
+        suggestions.append("Expand the answer with a concrete implementation example.")
+    if not suggestions:
+        suggestions.append("Great answer. Add one concrete real-world example to make it even stronger.")
+
+    focus_term = next(iter(question_keys), "the core concept")
+    example_improvement = (
+        f"A stronger answer would define {focus_term}, explain why it matters, discuss one trade-off, "
+        "and finish with a practical implementation example."
     )
-    content = await openai_chat("You are a senior technical interviewer.", prompt)
-    return parse_json_from_llm(content)
+
+    return {
+        "score": overall,
+        "technicalAccuracy": accuracy_text,
+        "communicationClarity": clarity_text,
+        "depthOfKnowledge": depth_text,
+        "suggestions": " ".join(suggestions),
+        "exampleImprovement": example_improvement,
+    }
 
 
 def grade_from_score(score: float) -> str:
@@ -1308,6 +1586,15 @@ async def simulator_trends(user: dict[str, Any] = Depends(get_current_user)):
 
 @app.get("/api/interview/readiness")
 async def interview_readiness(user: dict[str, Any] = Depends(get_current_user)):
+    def as_utc(dt: Any) -> Optional[datetime]:
+        if not isinstance(dt, datetime):
+            return None
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+
+    now = now_utc()
+
     user_id = oid_str(user["_id"])
     resumes = list(resumes_col.find({"userId": user_id}).sort("createdAt", DESCENDING))
     completed_sessions = list(sessions_col.find({"userId": user_id, "status": "Completed"}).sort("createdAt", DESCENDING))
@@ -1374,11 +1661,17 @@ async def interview_readiness(user: dict[str, Any] = Depends(get_current_user)):
         interview_score = 0
 
     if completed_sessions:
-        distinct_days = len({s.get("createdAt").date() for s in completed_sessions if s.get("createdAt") is not None})
-        last_practice = max((s.get("completedAt") or s.get("createdAt") for s in completed_sessions), default=None)
-        has_recent = bool(last_practice and (now_utc() - last_practice).days <= 7)
-        first_session = min((s.get("createdAt") for s in completed_sessions), default=now_utc())
-        span_days = max((now_utc() - first_session).days, 1)
+        created_dates = [as_utc(s.get("createdAt")) for s in completed_sessions]
+        created_dates = [d for d in created_dates if d is not None]
+        distinct_days = len({d.date() for d in created_dates})
+
+        last_candidates = [as_utc(s.get("completedAt") or s.get("createdAt")) for s in completed_sessions]
+        last_candidates = [d for d in last_candidates if d is not None]
+        last_practice = max(last_candidates) if last_candidates else None
+
+        has_recent = bool(last_practice and (now - last_practice).days <= 7)
+        first_session = min(created_dates) if created_dates else now
+        span_days = max((now - first_session).days, 1)
         sessions_per_week = len(completed_sessions) / span_days * 7
         if sessions_per_week >= 5:
             frequency = "Daily"
@@ -1413,7 +1706,7 @@ async def interview_readiness(user: dict[str, Any] = Depends(get_current_user)):
                     trend_text = "Slightly declining"
 
         day_score = min(distinct_days, 20) * 2.0
-        recency_score = 30 if has_recent else (15 if (last_practice and (now_utc() - last_practice).days <= 14) else 0)
+        recency_score = 30 if has_recent else (15 if (last_practice and (now - last_practice).days <= 14) else 0)
         consistency_score = int(min(round(day_score + recency_score + freq_score), 100))
     else:
         distinct_days = 0

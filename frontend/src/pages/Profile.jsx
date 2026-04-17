@@ -66,14 +66,14 @@ export default function Profile() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
-        <p className="mt-1 text-sm text-slate-500">Manage your account settings</p>
+      <div className="rounded-3xl bg-gradient-to-r from-sky-700 via-cyan-700 to-teal-600 px-6 py-7 text-white shadow-[0_16px_40px_rgba(2,40,58,0.22)] lg:px-8">
+        <h1 className="text-2xl font-bold">Profile</h1>
+        <p className="mt-1 text-sm text-cyan-50/90">Manage your account settings</p>
       </div>
 
       <div className="mx-auto max-w-2xl space-y-8">
         {/* Avatar + Info */}
-        <div className="flex items-center gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center gap-5 rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold text-white">
             {profile?.fullName?.charAt(0)?.toUpperCase() || 'U'}
           </div>
@@ -87,7 +87,7 @@ export default function Profile() {
         </div>
 
         {/* Update Name */}
-        <form onSubmit={handleUpdateProfile} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleUpdateProfile} className="rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
           <h2 className="mb-4 text-lg font-semibold text-slate-800">Update Profile</h2>
           <div className="space-y-4">
             <div>
@@ -97,13 +97,13 @@ export default function Profile() {
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
               />
             </div>
             <button
               type="submit"
               disabled={saving}
-              className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-xl bg-gradient-to-r from-cyan-600 to-sky-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -111,7 +111,7 @@ export default function Profile() {
         </form>
 
         {/* Change Password */}
-        <form onSubmit={handleChangePassword} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleChangePassword} className="rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
           <h2 className="mb-4 text-lg font-semibold text-slate-800">Change Password</h2>
           <div className="space-y-4">
             <div>
@@ -121,7 +121,7 @@ export default function Profile() {
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
               />
             </div>
             <div>
@@ -131,7 +131,7 @@ export default function Profile() {
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
               />
             </div>
             <div>
@@ -141,13 +141,13 @@ export default function Profile() {
                 required
                 value={confirmNew}
                 onChange={(e) => setConfirmNew(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
               />
             </div>
             <button
               type="submit"
               disabled={changingPw}
-              className="rounded-lg bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
+              className="rounded-xl bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
             >
               {changingPw ? 'Changing...' : 'Change Password'}
             </button>

@@ -10,14 +10,14 @@ export default function EvaluationCard({
 }) {
   const scoreColor =
     score >= 7
-      ? 'from-green-500 to-emerald-600'
+      ? 'from-emerald-500 to-teal-600'
       : score >= 4
         ? 'from-amber-500 to-orange-500'
-        : 'from-rose-500 to-red-600';
+        : 'from-rose-500 to-pink-600';
 
   const scoreBg =
     score >= 7
-      ? 'bg-green-50 border-green-200'
+      ? 'bg-emerald-50 border-emerald-200'
       : score >= 4
         ? 'bg-amber-50 border-amber-200'
         : 'bg-rose-50 border-rose-200';
@@ -25,7 +25,7 @@ export default function EvaluationCard({
   return (
     <div className="space-y-5 animate-in fade-in">
       {/* Score */}
-      <div className={`rounded-2xl border p-6 text-center shadow-sm ${scoreBg}`}>
+      <div className={`rounded-3xl border p-6 text-center shadow-[0_14px_30px_rgba(2,40,58,0.08)] ${scoreBg}`}>
         <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
           Your Score
         </p>
@@ -43,16 +43,16 @@ export default function EvaluationCard({
       <div className="grid gap-4 sm:grid-cols-1">
         {/* Technical Accuracy */}
         {technicalAccuracy && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 p-5">
             <div className="mb-2 flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-sm">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-100 text-sm">
                 🎯
               </span>
-              <h3 className="text-sm font-semibold text-blue-800">
+              <h3 className="text-sm font-semibold text-sky-800">
                 Technical Accuracy
               </h3>
             </div>
-            <p className="text-sm leading-relaxed text-blue-700">
+            <p className="text-sm leading-relaxed text-sky-700">
               {technicalAccuracy}
             </p>
           </div>
@@ -60,16 +60,16 @@ export default function EvaluationCard({
 
         {/* Communication Clarity */}
         {communicationClarity && (
-          <div className="rounded-xl border border-purple-200 bg-purple-50 p-5">
+          <div className="rounded-2xl border border-cyan-200 bg-cyan-50 p-5">
             <div className="mb-2 flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-100 text-sm">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-100 text-sm">
                 💬
               </span>
-              <h3 className="text-sm font-semibold text-purple-800">
+              <h3 className="text-sm font-semibold text-cyan-800">
                 Communication Clarity
               </h3>
             </div>
-            <p className="text-sm leading-relaxed text-purple-700">
+            <p className="text-sm leading-relaxed text-cyan-700">
               {communicationClarity}
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function EvaluationCard({
 
         {/* Depth of Knowledge */}
         {depthOfKnowledge && (
-          <div className="rounded-xl border border-teal-200 bg-teal-50 p-5">
+          <div className="rounded-2xl border border-teal-200 bg-teal-50 p-5">
             <div className="mb-2 flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-sm">
                 🧠
@@ -94,7 +94,7 @@ export default function EvaluationCard({
 
         {/* Improvement Tips */}
         {suggestions && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
             <div className="mb-2 flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-sm">
                 💡
@@ -111,16 +111,16 @@ export default function EvaluationCard({
 
         {/* Example Improvement */}
         {exampleImprovement && (
-          <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-5">
+          <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
             <div className="mb-2 flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-100 text-sm">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-sm">
                 ✨
               </span>
-              <h3 className="text-sm font-semibold text-cyan-800">
+              <h3 className="text-sm font-semibold text-indigo-800">
                 Example Improvement
               </h3>
             </div>
-            <p className="text-sm leading-relaxed text-cyan-700">
+            <p className="text-sm leading-relaxed text-indigo-700">
               {exampleImprovement}
             </p>
           </div>
@@ -131,7 +131,7 @@ export default function EvaluationCard({
       <div className="flex justify-end pt-2">
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow-md"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-sky-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md"
         >
           {isLastQuestion ? 'View Results' : 'Next Question →'}
         </button>

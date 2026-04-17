@@ -9,15 +9,31 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const syncAuthFromStorage = () => {
     const token = getToken();
     const stored = getUser();
     if (token && !isTokenExpired(token) && stored) {
       setUser(stored);
-    } else if (token && isTokenExpired(token)) {
-      clearAuth();
+      return;
     }
+    clearAuth();
+    setUser(null);
+  };
+
+  useEffect(() => {
+    syncAuthFromStorage();
+
+    const onPageShow = () => syncAuthFromStorage();
+    const onPopState = () => syncAuthFromStorage();
+    window.addEventListener('pageshow', onPageShow);
+    window.addEventListener('popstate', onPopState);
+
     setLoading(false);
+
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('popstate', onPopState);
+    };
   }, []);
 
   const loginUser = (userData) => setUser(userData);

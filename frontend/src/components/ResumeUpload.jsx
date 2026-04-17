@@ -36,14 +36,14 @@ export default function ResumeUpload({ onUpload, loading }) {
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 transition-colors ${
-          dragOver ? 'border-indigo-400 bg-indigo-50' : 'border-slate-300 bg-slate-50'
+        className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 transition-colors ${
+          dragOver ? 'border-cyan-400 bg-cyan-50' : 'border-slate-300 bg-white/75'
         }`}
       >
-        <HiOutlineCloudArrowUp className="mb-3 h-10 w-10 text-slate-400" />
+        <HiOutlineCloudArrowUp className="mb-3 h-10 w-10 text-slate-500" />
         <p className="text-sm font-medium text-slate-600">Drag & drop your resume here</p>
         <p className="mb-4 text-xs text-slate-400">PDF or DOCX up to 10 MB</p>
-        <label className="cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+        <label className="cursor-pointer rounded-xl bg-gradient-to-r from-cyan-600 to-sky-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:brightness-105">
           Browse Files
           <input
             type="file"
@@ -55,9 +55,9 @@ export default function ResumeUpload({ onUpload, loading }) {
       </div>
 
       {selectedFile && (
-        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <HiOutlineDocument className="h-6 w-6 text-indigo-500" />
+            <HiOutlineDocument className="h-6 w-6 text-cyan-600" />
             <div>
               <p className="text-sm font-medium text-slate-700">{selectedFile.name}</p>
               <p className="text-xs text-slate-400">{(selectedFile.size / 1024).toFixed(1)} KB</p>
@@ -66,7 +66,7 @@ export default function ResumeUpload({ onUpload, loading }) {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-xl bg-gradient-to-r from-cyan-600 to-sky-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:brightness-105 disabled:opacity-50"
           >
             {loading ? 'Analyzing...' : 'Analyze Resume'}
           </button>

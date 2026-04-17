@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 
 import Login from './pages/Login';
@@ -19,9 +20,9 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
           {/* Protected routes */}
           <Route
@@ -39,10 +40,22 @@ export default function App() {
           </Route>
 
           {/* Default redirect */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: '14px',
+            border: '1px solid #dbe8f0',
+            background: '#ffffff',
+            color: '#0f172a',
+            boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08)',
+          },
+        }}
+      />
     </AuthProvider>
   );
 }

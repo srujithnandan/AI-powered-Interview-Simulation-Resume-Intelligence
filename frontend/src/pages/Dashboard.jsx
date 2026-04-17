@@ -13,9 +13,10 @@ import {
 } from 'chart.js';
 import ScoreCard from '../components/ScoreCard';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getHistory, getTrends, getReadiness } from '../services/interviewService';
+import { getHistory, getTrends } from '../services/interviewService';
 import { getMyResumes } from '../services/resumeService';
 import { useAuth } from '../context/AuthContext';
+import { onDataUpdated } from '../utils/dataEvents';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
 
@@ -43,16 +44,17 @@ export default function Dashboard() {
         const t = trends.status === 'fulfilled' ? trends.value : {};
         const r = resumes.status === 'fulfilled' ? resumes.value : [];
 
-        const latestAts = r.length > 0 ? r[r.length - 1].atsScore : 0;
+        const latestAts = r.length > 0 ? r[0].atsScore : 0;
+        const recentSessions = h.sessions || [];
 
         setStats({
           totalInterviews: h.completedSessions || 0,
           averageScore: t.overallAverageScore || 0,
           atsScore: latestAts,
-          recentSessions: (h.sessions || []).slice(0, 5),
+          recentSessions: recentSessions.slice(0, 5),
           scoreTrend: (t.recentTrends || []).map((s) => ({
-            label: new Date(s.completedAt).toLocaleDateString(),
-            score: s.overallScore,
+            label: new Date(s.date || s.createdAt || Date.now()).toLocaleDateString(),
+            score: s.averageScore || 0,
           })),
         });
       } catch {
@@ -61,7 +63,10 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
+
     fetchData();
+    const unsubscribe = onDataUpdated(fetchData);
+    return unsubscribe;
   }, []);
 
   if (loading) return <LoadingSpinner size="lg" message="Loading dashboard..." />;
@@ -93,9 +98,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back, {user?.fullName}!</h1>
-        <p className="mt-1 text-sm text-slate-500">Here's your preparation overview</p>
+      <div className="rounded-3xl bg-gradient-to-r from-sky-700 via-cyan-700 to-teal-600 px-6 py-7 text-white shadow-[0_16px_40px_rgba(2,40,58,0.22)] lg:px-8">
+        <h1 className="text-2xl font-bold">Welcome back, {user?.fullName}!</h1>
+        <p className="mt-1 text-sm text-cyan-50/90">Your latest interview and resume momentum at a glance</p>
       </div>
 
       {/* Stat cards */}
@@ -113,7 +118,7 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="lg:col-span-2 rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
           <h2 className="mb-4 text-lg font-semibold text-slate-800">Score Trend</h2>
           {stats.scoreTrend.length > 0 ? (
             <Line data={lineData} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } }} />
@@ -122,7 +127,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
           <h2 className="mb-4 text-lg font-semibold text-slate-800">ATS Score</h2>
           {stats.atsScore > 0 ? (
             <Doughnut
@@ -136,7 +141,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
         <h2 className="mb-4 text-lg font-semibold text-slate-800">Recent Interview Activity</h2>
         {stats.recentSessions.length > 0 ? (
           <div className="overflow-x-auto">
@@ -155,7 +160,7 @@ export default function Dashboard() {
                   <tr key={i} className="text-slate-700">
                     <td className="py-3 font-medium">{s.role}</td>
                     <td className="py-3">{s.difficulty}</td>
-                    <td className="py-3">{s.overallScore?.toFixed(1) || '—'}/10</td>
+                    <td className="py-3">{typeof s.averageScore === 'number' ? s.averageScore.toFixed(1) : '—'}/10</td>
                     <td className="py-3">
                       <span
                         className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${

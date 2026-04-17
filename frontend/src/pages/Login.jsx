@@ -31,7 +31,9 @@ export default function Login() {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel — Branding */}
-      <div className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 p-12 lg:flex">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-sky-800 via-cyan-700 to-teal-600 p-12 lg:flex">
+        <div className="absolute -left-16 top-10 h-52 w-52 rounded-full bg-cyan-300/30 blur-3xl" />
+        <div className="absolute -right-14 bottom-10 h-56 w-56 rounded-full bg-amber-300/25 blur-3xl" />
         <div>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-sm font-bold text-white backdrop-blur-sm">
@@ -41,11 +43,11 @@ export default function Login() {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="relative z-10 space-y-8">
           <h2 className="text-4xl font-bold leading-tight text-white">
-            Ace your next<br />technical interview
+            Own your next<br />technical interview
           </h2>
-          <p className="max-w-sm text-base text-indigo-200">
+          <p className="max-w-sm text-base text-cyan-50/90">
             Practice with AI-powered mock interviews, get your resume analyzed, and track your progress — all in one place.
           </p>
           <div className="space-y-4">
@@ -54,7 +56,7 @@ export default function Login() {
               { icon: '📄', text: 'Smart resume ATS analysis' },
               { icon: '📊', text: 'Performance analytics & tracking' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-indigo-100">
+              <div key={i} className="flex items-center gap-3 text-sm text-cyan-50">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-base">
                   {item.icon}
                 </span>
@@ -64,15 +66,15 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="text-xs text-indigo-300">© 2026 AI Interview Simulator. All rights reserved.</p>
+        <p className="text-xs text-cyan-100/80">© 2026 AI Interview Simulator. All rights reserved.</p>
       </div>
 
       {/* Right Panel — Form */}
-      <div className="flex w-full items-center justify-center bg-slate-50 px-6 lg:w-1/2">
+      <div className="flex w-full items-center justify-center bg-transparent px-6 lg:w-1/2">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="mb-8 text-center lg:hidden">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-xl font-bold text-white">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-600 to-sky-700 text-xl font-bold text-white">
               AI
             </div>
           </div>
@@ -82,7 +84,7 @@ export default function Login() {
             <p className="mt-1 text-sm text-slate-500">Sign in to continue your preparation</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl border border-white/80 bg-white/90 p-6 shadow-[0_16px_40px_rgba(2,40,58,0.1)] backdrop-blur">
             {/* Email */}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Email address</label>
@@ -93,7 +95,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
                   placeholder="you@example.com"
                 />
               </div>
@@ -103,7 +105,7 @@ export default function Login() {
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-sm font-medium text-slate-700">Password</label>
-                <Link to="/forgot-password" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
+                <Link to="/forgot-password" className="text-xs font-medium text-sky-700 hover:text-sky-600">
                   Forgot password?
                 </Link>
               </div>
@@ -114,7 +116,7 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-10 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-10 text-sm outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
                   placeholder="••••••••"
                 />
                 <button
@@ -131,7 +133,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-sky-700 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 disabled:opacity-50"
             >
               {loading && (
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -145,7 +147,7 @@ export default function Login() {
 
           <p className="mt-8 text-center text-sm text-slate-500">
             Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
+            <Link to="/register" className="font-semibold text-sky-700 hover:text-sky-600">
               Create one for free
             </Link>
           </p>

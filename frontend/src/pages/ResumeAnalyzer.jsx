@@ -3,6 +3,7 @@ import ResumeUpload from '../components/ResumeUpload';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { uploadResume, getMyResumes, getDetailedAnalysis } from '../services/resumeService';
 import toast from 'react-hot-toast';
+import { emitDataUpdated, onDataUpdated } from '../utils/dataEvents';
 
 export default function ResumeAnalyzer() {
   const [loading, setLoading] = useState(false);
@@ -11,12 +12,20 @@ export default function ResumeAnalyzer() {
   const [loadingResumes, setLoadingResumes] = useState(true);
   const [detailedView, setDetailedView] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [selectedResumeId, setSelectedResumeId] = useState(null);
 
   useEffect(() => {
-    getMyResumes()
-      .then(setResumes)
-      .catch(() => {})
-      .finally(() => setLoadingResumes(false));
+    const fetchResumes = () => {
+      setLoadingResumes(true);
+      getMyResumes()
+        .then(setResumes)
+        .catch(() => {})
+        .finally(() => setLoadingResumes(false));
+    };
+
+    fetchResumes();
+    const unsubscribe = onDataUpdated(fetchResumes);
+    return unsubscribe;
   }, []);
 
   const handleUpload = async (file) => {
@@ -25,7 +34,8 @@ export default function ResumeAnalyzer() {
     try {
       const data = await uploadResume(file);
       setAnalysis(data);
-      setResumes((prev) => [...prev, { resumeId: data.resumeId, fileName: data.fileName, atsScore: data.atsScore, createdAt: data.createdAt }]);
+      setResumes((prev) => [{ resumeId: data.resumeId, fileName: data.fileName, atsScore: data.atsScore, createdAt: data.createdAt }, ...prev]);
+      emitDataUpdated('resume-upload');
       toast.success('Resume analyzed successfully!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Upload failed');
@@ -35,6 +45,8 @@ export default function ResumeAnalyzer() {
   };
 
   const handleViewDetailed = async (resumeId) => {
+    setSelectedResumeId(resumeId);
+    setDetailedView(null);
     setLoadingDetail(true);
     try {
       const data = await getDetailedAnalysis(resumeId);
@@ -48,9 +60,9 @@ export default function ResumeAnalyzer() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Resume Analyzer</h1>
-        <p className="mt-1 text-sm text-slate-500">Upload your resume for AI-powered ATS analysis</p>
+      <div className="rounded-3xl bg-gradient-to-r from-sky-700 via-cyan-700 to-teal-600 px-6 py-7 text-white shadow-[0_16px_40px_rgba(2,40,58,0.22)] lg:px-8">
+        <h1 className="text-2xl font-bold">Resume Analyzer</h1>
+        <p className="mt-1 text-sm text-cyan-50/90">Upload your resume for AI-powered ATS analysis and instant feedback</p>
       </div>
 
       <ResumeUpload onUpload={handleUpload} loading={loading} />
@@ -59,13 +71,13 @@ export default function ResumeAnalyzer() {
       {analysis && (
         <div className="space-y-6">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <div className="rounded-2xl border border-white/80 bg-white/90 p-6 text-center shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
               <p className="text-sm text-slate-500">ATS Score</p>
               <p className={`mt-1 text-4xl font-bold ${analysis.atsScore >= 70 ? 'text-green-600' : analysis.atsScore >= 40 ? 'text-amber-500' : 'text-rose-500'}`}>
                 {analysis.atsScore}%
               </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:col-span-1 lg:col-span-3">
+            <div className="rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur sm:col-span-1 lg:col-span-3">
               <p className="text-sm font-medium text-slate-500">File</p>
               <p className="text-sm text-slate-700">{analysis.fileName}</p>
             </div>
@@ -73,7 +85,7 @@ export default function ResumeAnalyzer() {
 
           {/* Strengths */}
           {analysis.strengthAreas?.length > 0 && (
-            <div className="rounded-xl border border-green-200 bg-green-50 p-6">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
               <h3 className="mb-3 text-sm font-semibold text-green-800">Strengths</h3>
               <ul className="space-y-1.5">
                 {analysis.strengthAreas.map((s, i) => (
@@ -88,7 +100,7 @@ export default function ResumeAnalyzer() {
 
           {/* Missing Skills */}
           {analysis.missingSkills?.length > 0 && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-6">
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6">
               <h3 className="mb-3 text-sm font-semibold text-rose-800">Missing Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {analysis.missingSkills.map((s, i) => (
@@ -102,7 +114,7 @@ export default function ResumeAnalyzer() {
 
           {/* Suggestions */}
           {analysis.improvementSuggestions?.length > 0 && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
               <h3 className="mb-3 text-sm font-semibold text-amber-800">Improvement Suggestions</h3>
               <ul className="space-y-1.5">
                 {analysis.improvementSuggestions.map((s, i) => (
@@ -118,7 +130,7 @@ export default function ResumeAnalyzer() {
       )}
 
       {/* Previous Resumes */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-white/80 bg-white/90 p-6 shadow-[0_12px_30px_rgba(2,40,58,0.08)] backdrop-blur">
         <h2 className="mb-4 text-lg font-semibold text-slate-800">Previous Resumes</h2>
         {loadingResumes ? (
           <LoadingSpinner size="sm" />
@@ -142,7 +154,7 @@ export default function ResumeAnalyzer() {
                     <td className="py-3">
                       <button
                         onClick={() => handleViewDetailed(r.resumeId)}
-                        className="text-indigo-600 hover:text-indigo-500 text-xs font-medium"
+                        className="text-sky-700 hover:text-sky-600 text-xs font-medium"
                       >
                         View Details
                       </button>
@@ -158,12 +170,20 @@ export default function ResumeAnalyzer() {
       </div>
 
       {/* Detailed Analysis Modal */}
-      {detailedView && (
+      {selectedResumeId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-8 shadow-xl">
+          <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-8 shadow-xl">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900">Detailed Analysis</h2>
-              <button onClick={() => setDetailedView(null)} className="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+              <button
+                onClick={() => {
+                  setSelectedResumeId(null);
+                  setDetailedView(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 text-xl"
+              >
+                ✕
+              </button>
             </div>
             {loadingDetail ? (
               <LoadingSpinner />
