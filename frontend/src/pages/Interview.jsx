@@ -21,10 +21,10 @@ const ROLES = [
     desc: 'Spring Boot, JVM, enterprise Java',
   },
   {
-    key: '.NET Developer',
-    label: '.NET Developer',
-    icon: '🔷',
-    desc: 'C#, ASP.NET Core, Entity Framework',
+    key: 'Python Developer',
+    label: 'Python Developer',
+    icon: '🐍',
+    desc: 'FastAPI, MongoDB, async APIs',
   },
   {
     key: 'Full Stack Developer',

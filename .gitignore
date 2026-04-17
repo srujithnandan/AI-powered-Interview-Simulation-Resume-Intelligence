@@ -1,4 +1,4 @@
-## .NET
+## Legacy backend
 bin/
 obj/
 *.user
@@ -35,3 +35,9 @@ Desktop.ini
 
 ## Environment
 *.env
+
+## Python
+.venv/
+venv/
+__pycache__/
+*.pyc
