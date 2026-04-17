@@ -32,6 +32,14 @@ JWT_EXPIRY_MINUTES = int(os.getenv("JWT_EXPIRY_MINUTES", "120"))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1/")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:3000,http://localhost:5173",
+    ).split(",")
+    if origin.strip()
+]
 
 MAX_FAILED_LOGIN_ATTEMPTS = 5
 LOCKOUT_MINUTES = 15
@@ -68,7 +76,7 @@ app = FastAPI(title="AI Interview Simulator and Resume Analyzer API (Python)", v
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
