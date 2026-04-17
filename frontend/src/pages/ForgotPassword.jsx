@@ -82,7 +82,7 @@ export default function ForgotPassword() {
               <HiOutlineEnvelope className="h-7 w-7 text-green-600" />
             </div>
             <p className="text-sm text-green-700">
-              If an account exists for <strong>{email}</strong>, you'll receive an email with instructions to reset your password.
+              If an account exists for <strong>{email}</strong>, you&apos;ll receive an email with instructions to reset your password.
             </p>
           </div>
         )}

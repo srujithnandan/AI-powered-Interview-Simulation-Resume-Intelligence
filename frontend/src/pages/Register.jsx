@@ -78,7 +78,7 @@ export default function Register() {
             Start your journey<br />to interview success
           </h2>
           <p className="max-w-sm text-base text-cyan-50/90">
-            Join thousands of developers who've improved their interview skills with AI-powered practice sessions.
+            Join thousands of developers who&apos;ve improved their interview skills with AI-powered practice sessions.
           </p>
           <div className="grid grid-cols-2 gap-4">
             {[

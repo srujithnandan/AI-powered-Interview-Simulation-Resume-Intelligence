@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
-  const { user, loginUser } = useAuth();
+  const { loginUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [fullName, setFullName] = useState('');
