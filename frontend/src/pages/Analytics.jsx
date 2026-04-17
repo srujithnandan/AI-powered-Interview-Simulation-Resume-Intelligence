@@ -43,9 +43,10 @@ export default function Analytics() {
 
   if (loading) return <LoadingSpinner size="lg" message="Loading analytics..." />;
 
-  const latestResume = resumes[0] || null;
-  const avgAtsScore = resumes.length > 0
-    ? resumes.reduce((sum, r) => sum + (r.atsScore || 0), 0) / resumes.length
+  const safeResumes = Array.isArray(resumes) ? resumes : [];
+  const latestResume = safeResumes[0] || null;
+  const avgAtsScore = safeResumes.length > 0
+    ? safeResumes.reduce((sum, r) => sum + (r.atsScore || 0), 0) / safeResumes.length
     : 0;
 
   // Performance by Role bar chart
@@ -95,13 +96,13 @@ export default function Analytics() {
   };
 
   const resumeTrendData = {
-    labels: [...resumes]
+    labels: [...safeResumes]
       .reverse()
       .map((r) => new Date(r.createdAt).toLocaleDateString()),
     datasets: [
       {
         label: 'ATS Score',
-        data: [...resumes].reverse().map((r) => r.atsScore || 0),
+        data: [...safeResumes].reverse().map((r) => r.atsScore || 0),
         borderColor: '#0f766e',
         backgroundColor: 'rgba(15,118,110,0.12)',
         tension: 0.35,
@@ -128,7 +129,7 @@ export default function Analytics() {
         <SummaryCard label="Total Sessions" value={trends?.totalSessions ?? 0} accent="indigo" />
         <SummaryCard label="Questions" value={trends?.totalQuestionsAnswered ?? 0} accent="sky" />
         <SummaryCard label="Avg Interview" value={`${(trends?.overallAverageScore ?? 0).toFixed(1)}/10`} accent="violet" />
-        <SummaryCard label="Resume Count" value={resumes.length} accent="teal" />
+        <SummaryCard label="Resume Count" value={safeResumes.length} accent="teal" />
         <SummaryCard label="Latest ATS" value={latestResume ? `${latestResume.atsScore}%` : '—'} accent="emerald" />
         <SummaryCard label="Readiness" value={readiness?.readinessLevel ?? '—'} accent="amber" />
       </div>
@@ -144,7 +145,7 @@ export default function Analytics() {
         </ChartCard>
 
         <ChartCard title="ATS Trend">
-          {resumes.length > 0 ? (
+          {safeResumes.length > 0 ? (
             <Line data={resumeTrendData} options={{ responsive: true, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } }} />
           ) : (
             <EmptyChart message="Upload a resume to see ATS trend" />

@@ -43,8 +43,9 @@ export default function Dashboard() {
         const h = history.status === 'fulfilled' ? history.value : {};
         const t = trends.status === 'fulfilled' ? trends.value : {};
         const r = resumes.status === 'fulfilled' ? resumes.value : [];
+        const resumeList = Array.isArray(r) ? r : Array.isArray(r?.resumes) ? r.resumes : [];
 
-        const latestAts = r.length > 0 ? r[0].atsScore : 0;
+        const latestAts = resumeList.length > 0 ? resumeList[0].atsScore : 0;
         const recentSessions = h.sessions || [];
 
         setStats({
